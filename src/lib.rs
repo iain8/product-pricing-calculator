@@ -101,73 +101,114 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
 //     View
 // ------ ------
 
-// (Remove the line below once your `Model` become more complex.)
-#[allow(clippy::trivially_copy_pass_by_ref)]
-// `view` describes what to display.
 fn view(model: &Model) -> Node<Msg> {
     div![
-        h1!["Wholesale pricing calculator"],
         div![
-            form![
-                div![
-                    label!["Quantity"],
-                    input![
-                        attrs!{At::Name => "pin-quantity", At::Placeholder => "Pin quantity", At::Value => model.pin_quantity},
-                        input_ev(Ev::Input, |value| Msg::Update("pin_quantity".to_string(), value))
-                    ],
-                ],
-                div![
-                    label!["Total cost"],
-                    input![
-                        attrs!{At::Name => "pin-total-cost", At::Placeholder => "Pin total cost", At::Value => model.pin_cost},
-                        input_ev(Ev::Input, |value| Msg::Update("pin_cost".to_string(), value))
-                    ],
-                ],
-                div![
-                    label!["Hours worked"],
-                    input![
-                        attrs!{At::Name => "hours-worked", At::Placeholder => "Hours worked", At::Value => model.hours_worked},
-                        input_ev(Ev::Input, |value| Msg::Update("hours_worked".to_string(), value))
-                    ],
-                ],
-                div![
-                    label!["Hourly wage"],
-                    input![
-                        attrs!{At::Name => "hours-worked", At::Placeholder => "Hourly wage", At::Value => model.hourly_wage},
-                        input_ev(Ev::Input, |value| Msg::Update("hourly_wage".to_string(), value))
-                    ],
-                ],
-                div![
-                    label!["Overhead percentage"],
-                    input![
-                        attrs!{At::Name => "hours-worked", At::Placeholder => "Overhead percentage", At::Value => model.overhead_percentage},
-                        input_ev(Ev::Input, |value| Msg::Update("overhead_percentage".to_string(), value))
-                    ],
-                ],
-                div![
-                    label!["Unit cost"],
-                    input![
-                        attrs!{At::Name => "pin-unit-cost", At::Placeholder => "Pin unit cost", At::Value => model.pin_unit_cost}
-                    ]
-                ],
-                div![
-                    "Wholesale price per unit: $",
-                    model.wholesale_unit_price.to_string()
-                ]
+            C!["md:grid md:grid-cols-3 md:gap-6"],
+            left_column(),
+            right_column(model)
+        ]
+    ]
+}
+
+fn left_column() -> Node<Msg> {
+    div![
+        C!["md:col-span-1"],
+        div![
+            C!["px-4 sm:px-0"],
+            h3![
+                C!["text-lg font-medium leading-6 text-gray-900"],
+                "Wholesale pricing calculator"
             ]
+        ]
+    ]
+}
+
+fn right_column(model: &Model) -> Node<Msg> {
+    div![
+        C!["mt-5 md:mt-0 md:col-span-2"],
+        form![
+            div![
+                C!["shadow sm:rounded-md sm:overflow-hidden"],
+                div![
+                    C!["px-4 py-5 bg-white space-y-6 sm:p-6"],
+                    input_field(
+                        "pin_quantity".to_string(), 
+                        "Quantity", 
+                        "Number of pins ordered", 
+                        attrs!{At::Name => "pin-quantity", At::Placeholder => "Pin quantity", At::Value => model.pin_quantity}
+                    ),
+                    input_field(
+                        "pin_cost".to_string(), 
+                        "Total cost", 
+                        "Total cost of order", 
+                        attrs!{At::Name => "pin-total-cost", At::Placeholder => "Pin total cost", At::Value => model.pin_cost}
+                    ),
+                    input_field(
+                        "hours_worked".to_string(), 
+                        "Hours worked", 
+                        "Hours worked on item", 
+                        attrs!{At::Name => "hours-worked", At::Placeholder => "Hours worked", At::Value => model.hours_worked}
+                    ),
+                    input_field(
+                        "hourly_wage".to_string(), 
+                        "Hourly wage", 
+                        "Cost of one hours work", 
+                        attrs!{At::Name => "hourly-wage", At::Placeholder => "Hourly wage", At::Value => model.hourly_wage}
+                    ),
+                    input_field(
+                        "overhead_percentage".to_string(), 
+                        "Overhead percentage", 
+                        "Overheads as percentage of cost", 
+                        attrs!{At::Name => "overhead-percentage", At::Placeholder => "Overhead percentage", At::Value => model.overhead_percentage},
+                    ),
+                    input_field(
+                        "pin_unit_cost".to_string(), 
+                        "Unit cost", 
+                        "Cost of one pin", 
+                        attrs!{At::Name => "pin-unit-cost", At::Placeholder => "Pin unit cost", At::Value => model.pin_unit_cost},
+                    ),
+                    div![
+                        "Wholesale price per unit: $",
+                        model.wholesale_unit_price.to_string()
+                    ]
+                ]
+            ],
         ],
         button![
+            C!["ml-5 py-2 px-3 border rounded-md"],
             "Calculate",
             ev(Ev::Click, move |_| Msg::Calculate)
         ]
     ]
 }
 
-// ------ ------
-//     Start
-// ------ ------
+fn input_field(
+    field: String,
+    label: &str, 
+    description: &str,
+    attrs: seed::Attrs
+) -> Node<Msg> {
+    div![
+        label![
+            C!["block text-sm font-medium text-gray-700"],
+            label
+        ],
+        div![
+            C!["mt-1 rounded-md shadow-sm"],
+            input![
+                C!["shadow-sm focus:ring-indigo-500 focus:border-indigo-500 mt-1 block w-full sm:text-sm border-gray-300 rounded-md"],
+                attrs,
+                input_ev(Ev::Input, |value| Msg::Update(field, value))
+            ]
+        ],
+        p![
+            C!["mt-2 text-sm text-gray-500"],
+            description
+        ]
+    ]
+}
 
-// (This function is invoked by `init` function in `index.html`.)
 #[wasm_bindgen(start)]
 pub fn start() {
     // Mount the `app` to the element with the `id` "app".
