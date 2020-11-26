@@ -15,6 +15,7 @@ fn init(_: Url, _: &mut impl Orders<Msg>) -> Model {
         pin_cost: Money::new(0, Currency::get(Iso::CAD)),
         pin_quantity: 0,
         pin_unit_cost: Money::new(0, Currency::get(Iso::CAD)),
+        total_labour_cost: Money::new(0, Currency::get(Iso::CAD)),
         wholesale_unit_price: Money::new(0, Currency::get(Iso::CAD)),
     }
 }
@@ -26,6 +27,7 @@ struct Model {
     pin_cost: Money,
     pin_quantity: i32,
     pin_unit_cost: Money,
+    total_labour_cost: Money,
     wholesale_unit_price: Money,
 }
 
@@ -63,8 +65,8 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
 
             model.pin_unit_cost = model.pin_cost.clone() / pin_quantity;
 
-            let total_labour_cost: Money = model.hourly_wage.clone() * model.hours_worked;
-            let subtotal: Money = model.pin_cost.clone() + total_labour_cost;
+            model.total_labour_cost = model.hourly_wage.clone() * model.hours_worked;
+            let subtotal: Money = model.pin_cost.clone() + model.total_labour_cost.clone();
             let percentage =
                 Decimal::new(1, 1) + (model.overhead_percentage / Decimal::new(100, 1));
             let total = subtotal * percentage;
@@ -78,11 +80,21 @@ fn view(model: &Model) -> Node<Msg> {
     main![
         div![
             C!["relative bg-gray-100"],
+            header![
+                C!["bg-white shadow"],
+                div![
+                    C!["max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8"],
+                    h1![
+                        C!["text-3xl font-bold leading-tight text-gray-900"],
+                        "Wholesale pricing calculator"
+                    ]
+                ]
+            ],
             div![
                 C!["max-w-7xl mx-auto py-6 sm:px-6 lg:px-8"],
                 div![
-                    C!["md:grid md:grid-cols-3 md:gap-6"],
-                    left_column(),
+                    C!["md:grid md:grid-cols-4 md:gap-6"],
+                    left_column(model),
                     right_column(model)
                 ]
             ]
@@ -90,29 +102,66 @@ fn view(model: &Model) -> Node<Msg> {
     ]
 }
 
-fn left_column() -> Node<Msg> {
+fn right_column(model: &Model) -> Node<Msg> {
     div![
-        C!["md:col-span-1"],
+        C!["md:col-span-2"],
         div![
             C!["px-4 sm:px-0"],
-            h3![
-                C!["text-lg font-medium leading-6 text-gray-900"],
-                "Wholesale pricing calculator"
-            ],
-            p![
-                C!["mt-1 text-sm text-gray-600"],
-                "Enter the necessary numbers and press Calculate to see the wholesale unit price for your product"
+            table![
+                C!["min-w-full divide-y divide-gray-200"],
+                thead![
+                    tr![
+                        th![
+                            C!["px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"],
+                            attrs! {At::from("colspan") => 2},
+                            "Results"
+                        ]
+                    ],
+                ],
+                tbody![
+                    C!["bg-white divide-y divide-gray-200"],
+                    tr![
+                        td![
+                            C!["px-6 py-4 whitespace-nowrap text-sm text-gray-500"],
+                            "Manufacture cost per unit"
+                        ],
+                        td![
+                            C!["px-6 py-4 whitespace-nowrap text-sm"],
+                            format!("{}", model.pin_unit_cost)
+                        ],
+                    ],
+                    tr![
+                        td![
+                            C!["px-6 py-4 whitespace-nowrap text-sm text-gray-500"],
+                            "Total labour cost"
+                        ],
+                        td![
+                            C!["px-6 py-4 whitespace-nowrap text-sm"],
+                            format!("{}", model.total_labour_cost)
+                        ],
+                    ],
+                    tr![
+                        td![
+                            C!["px-6 py-4 whitespace-nowrap text-sm text-gray-500"],
+                            "Wholesale price per unit"
+                        ],
+                        td![
+                            C!["px-6 py-4 whitespace-nowrap text-sm"],
+                            format!("{}", model.wholesale_unit_price)
+                        ],
+                    ],
+                ]
             ]
         ]
     ]
 }
 
-fn right_column(model: &Model) -> Node<Msg> {
+fn left_column(model: &Model) -> Node<Msg> {
     div![
         C!["mt-5 md:mt-0 md:col-span-2"],
-        form![div![
+        div![
             C!["shadow sm:rounded-md sm:overflow-hidden"],
-            div![
+            form![div![
                 C!["px-4 py-5 bg-white space-y-6 sm:p-6"],
                 div![
                     C!["grid grid-cols-2 gap-4"],
@@ -153,17 +202,13 @@ fn right_column(model: &Model) -> Node<Msg> {
                         attrs! {At::Name => "overhead-percentage", At::Placeholder => "Overhead percentage", At::Value => model.overhead_percentage},
                     ),
                 ],
-                div![
-                    C!["px-4 py-3 bg-gray-50 sm:px-6"],
-                    "Wholesale price per unit: ",
-                    format!("{}", model.wholesale_unit_price)
-                ],
                 button![
                     C!["inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"],
                     "Calculate",
                     ev(Ev::Click, move |_| Msg::Calculate)
                 ]
-            ]
+            ],
+            ev(Ev::Submit, |event| event.prevent_default())
         ],],
     ]
 }
