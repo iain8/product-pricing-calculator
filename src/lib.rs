@@ -3,76 +3,33 @@
 // but some rules are too "annoying" or are not applicable for your case.)
 #![allow(clippy::wildcard_imports)]
 
-use std::ops::{Index, IndexMut};
 use seed::{prelude::*, *};
-
-// ------ ------
-//     Init
-// ------ ------
+use rusty_money::{Currency, Iso, Money};
+use rust_decimal::prelude::*;
 
 // `init` describes what should happen when your app started.
 fn init(_: Url, _: &mut impl Orders<Msg>) -> Model {
     Model {
-        hourly_wage: 0,
+        hourly_wage: Money::new(0, Currency::get(Iso::CAD)),
         hours_worked: 0,
-        overhead_percentage: 0,
-        pin_cost: 0,
+        overhead_percentage: Decimal::new(0, 2),
+        pin_cost: Money::new(0, Currency::get(Iso::CAD)),
         pin_quantity: 0,
-        pin_unit_cost: 0,
-        wholesale_unit_price: 0.0
+        pin_unit_cost: Money::new(0, Currency::get(Iso::CAD)),
+        wholesale_unit_price: Money::new(0, Currency::get(Iso::CAD))
     }
 }
 
-// ------ ------
-//     Model
-// ------ ------
-
-// `Model` describes our app state.
 struct Model {
-    hourly_wage: i32,
+    hourly_wage: Money,
     hours_worked: i32,
-    overhead_percentage: i32,
-    pin_cost: i32,
+    overhead_percentage: Decimal,
+    pin_cost: Money,
     pin_quantity: i32,
-    pin_unit_cost: i32,
-    wholesale_unit_price: f32
+    pin_unit_cost: Money,
+    wholesale_unit_price: Money
 }
 
-impl Index<&'_ str> for Model {
-    type Output = i32;
-
-    fn index(&self, key: &str) -> &Self::Output {
-        match key {
-            "hourly_wage" => &self.hourly_wage,
-            "hours_worked" => &self.hours_worked,
-            "overhead_percentage" => &self.overhead_percentage,
-            "pin_cost" => &self.pin_cost,
-            "pin_quantity" => &self.pin_quantity,
-            "pin_unit_cost" => &self.pin_unit_cost,
-            _ => panic!("unknown field: {}", key),
-        }
-    }
-}
-
-impl IndexMut<&'_ str> for Model {
-    fn index_mut(&mut self, key: &str) -> &mut i32 {
-        match key {
-            "hourly_wage" => &mut self.hourly_wage,
-            "hours_worked" => &mut self.hours_worked,
-            "overhead_percentage" => &mut self.overhead_percentage,
-            "pin_cost" => &mut self.pin_cost,
-            "pin_quantity" => &mut self.pin_quantity,
-            "pin_unit_cost" => &mut self.pin_unit_cost,
-            _ => panic!("unknown field: {}", key),
-        }
-    }
-}
-
-// ------ ------
-//    Update
-// ------ ------
-
-// `Msg` describes the different events you can modify state with.
 enum Msg {
     Update(String, String),
     Calculate
@@ -81,18 +38,32 @@ enum Msg {
 fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
     match msg {
         Msg::Update(field, value) => {
-            model[&field] = value.parse::<i32>().unwrap_or(0);
+            match field.as_ref() {
+                "hourly_wage" => match Money::from_str(&value[1..], "CAD") {
+                    Ok(result) => model.hourly_wage = result,
+                    Err(e) => log!("Bad hourly wage value {} ({})", value, e)
+                },
+                "hours_worked" => model.hours_worked = value.parse::<i32>().unwrap_or(0),
+                "overhead_percentage" => model.overhead_percentage = Decimal::from_str(&value).unwrap(),
+                "pin_cost" => match Money::from_str(&value[1..], "CAD") {
+                    Ok(result) => model.pin_cost = result,
+                    Err(e) => log!("Bad pin cost value {} ({})", value, e)
+                },
+                "pin_quantity" => model.pin_quantity = value.parse::<i32>().unwrap_or(0),
+                _ => println!("TODO: error handler")
+            };
         },
         Msg::Calculate => {
             let pin_quantity: i32 = if model.pin_quantity > 0 { model.pin_quantity } else { 1 };
 
-            model.pin_unit_cost = model.pin_cost / pin_quantity;
+            model.pin_unit_cost = model.pin_cost.clone() / pin_quantity;
 
-            let total_labour_cost: i32 = model.hourly_wage * model.hours_worked;
-            let subtotal: i32 = model.pin_cost + total_labour_cost;
-            let total = (subtotal * 1 + (model.overhead_percentage / 100)) as f32;
+            let total_labour_cost: Money = model.hourly_wage.clone() * model.hours_worked;
+            let subtotal: Money = model.pin_cost.clone() + total_labour_cost;
+            let percentage = Decimal::new(1, 1) + (model.overhead_percentage / Decimal::new(100, 1));
+            let total = subtotal * percentage;
 
-            model.wholesale_unit_price = total / pin_quantity as f32;
+            model.wholesale_unit_price = total / pin_quantity;
         }
     }
 }
@@ -169,8 +140,8 @@ fn right_column(model: &Model) -> Node<Msg> {
                         attrs!{At::Name => "pin-unit-cost", At::Placeholder => "Pin unit cost", At::Value => model.pin_unit_cost},
                     ),
                     div![
-                        "Wholesale price per unit: $",
-                        model.wholesale_unit_price.to_string()
+                        "Wholesale price per unit",
+                        format!("{}", model.wholesale_unit_price)
                     ]
                 ]
             ],
