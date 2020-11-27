@@ -24,9 +24,9 @@ jobs:
       - name: Run cargo make verify
         uses: davidB/rust-cargo-make@v1
         with:
-          command: make verify
+          command: verify
 
       - name: Run cargo make build_release
         uses: davidB/rust-cargo-make@v1
         with:
-          command: make build_release
+          command: build_release
