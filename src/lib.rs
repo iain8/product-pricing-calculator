@@ -11,10 +11,11 @@ fn init(_: Url, _: &mut impl Orders<Msg>) -> Model {
     Model {
         hourly_wage: Money::new(0, Currency::get(Iso::CAD)),
         hours_worked: 0,
-        overhead_percentage: Decimal::new(0, 2),
+        overhead_percentage: Decimal::new(15, 0),
         pin_cost: Money::new(0, Currency::get(Iso::CAD)),
         pin_quantity: 0,
         pin_unit_cost: Money::new(0, Currency::get(Iso::CAD)),
+        suggested_retail_cost: Money::new(0, Currency::get(Iso::CAD)),
         total_labour_cost: Money::new(0, Currency::get(Iso::CAD)),
         wholesale_unit_price: Money::new(0, Currency::get(Iso::CAD)),
     }
@@ -27,6 +28,7 @@ struct Model {
     pin_cost: Money,
     pin_quantity: i32,
     pin_unit_cost: Money,
+    suggested_retail_cost: Money,
     total_labour_cost: Money,
     wholesale_unit_price: Money,
 }
@@ -72,6 +74,7 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
             let total = subtotal * percentage;
 
             model.wholesale_unit_price = total / pin_quantity;
+            model.suggested_retail_cost = model.wholesale_unit_price.clone() * 2;
         }
     }
 }
@@ -148,6 +151,16 @@ fn right_column(model: &Model) -> Node<Msg> {
                         td![
                             C!["px-6 py-4 whitespace-nowrap text-sm"],
                             format!("{}", model.wholesale_unit_price)
+                        ],
+                    ],
+                    tr![
+                        td![
+                            C!["px-6 py-4 whitespace-nowrap text-sm text-gray-500"],
+                            "Suggested retail cost"
+                        ],
+                        td![
+                            C!["px-6 py-4 whitespace-nowrap text-sm"],
+                            format!("{}", model.suggested_retail_cost)
                         ],
                     ],
                 ]
