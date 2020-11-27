@@ -21,10 +21,11 @@ jobs:
           toolchain: stable
           override: true
       
+      - uses: davidB/rust-cargo-make@v1
+      
       - name: Run cargo make verify
-        uses: davidB/rust-cargo-make@v1
         run: cargo make verify
 
-      - name: Run cargo make build_release
-        uses: davidB/rust-cargo-make@v1
-        run: cargo make build_release
+      # - name: Run cargo make build_release
+      #   uses: davidB/rust-cargo-make@v1
+      #   run: cargo make build_release
