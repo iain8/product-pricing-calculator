@@ -37,6 +37,15 @@ install_crate = { crate_name = "wasm-pack", binary = "wasm-pack", test_arg = "-V
 command = "wasm-pack"
 args = ["build", "--target", "web", "--out-name", "package"]
 
+[tasks.build_deploy]
+description = "Build for deployment to netlify"
+dependencies = ["build_release"]
+script = [
+    "mkdir dist || true",
+    "cp index.html dist/index.html",
+    "cp -r pkg dist/pkg"
+]
+
 # ---- LINT ----
 
 [tasks.clippy]
