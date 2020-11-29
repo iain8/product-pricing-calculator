@@ -1,7 +1,4 @@
-// (Lines like the one below ignore selected Clippy rules
-//  - it's useful when you want to check your code with `cargo make verify`
-// but some rules are too "annoying" or are not applicable for your case.)
-// #![allow(clippy::wildcard_imports)]
+#![allow(clippy::wildcard_imports)]
 
 use rust_decimal::prelude::*;
 use rusty_money::{Currency, Iso, Money};
@@ -80,29 +77,27 @@ fn update(msg: Msg, model: &mut Model, _: &mut impl Orders<Msg>) {
 }
 
 fn view(model: &Model) -> Node<Msg> {
-    main![
-        div![
-            C!["relative bg-gray-100"],
-            header![
-                C!["bg-white shadow"],
-                div![
-                    C!["max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8"],
-                    h1![
-                        C!["text-3xl font-bold leading-tight text-gray-900"],
-                        "Wholesale pricing calculator"
-                    ]
-                ]
-            ],
+    main![div![
+        C!["relative bg-gray-100"],
+        header![
+            C!["bg-white shadow"],
             div![
-                C!["max-w-7xl mx-auto py-6 sm:px-6 lg:px-8"],
-                div![
-                    C!["md:grid md:grid-cols-4 md:gap-6"],
-                    left_column(model),
-                    right_column(model)
+                C!["max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8"],
+                h1![
+                    C!["text-3xl font-bold leading-tight text-gray-900"],
+                    "Wholesale pricing calculator"
                 ]
             ]
+        ],
+        div![
+            C!["max-w-7xl mx-auto py-6 sm:px-6 lg:px-8"],
+            div![
+                C!["md:grid md:grid-cols-4 md:gap-6"],
+                left_column(model),
+                right_column(model)
+            ]
         ]
-    ]
+    ]]
 }
 
 fn right_column(model: &Model) -> Node<Msg> {
