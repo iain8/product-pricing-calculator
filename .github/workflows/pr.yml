@@ -1,0 +1,25 @@
+name: Check PR
+
+on: 
+  pull_request:
+
+jobs:
+  build:
+    name: 'Build'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      
+      - uses: davidB/rust-cargo-make@v1
+
+      - name: Run cargo make verify
+        run: cargo make verify
