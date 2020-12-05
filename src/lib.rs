@@ -2,10 +2,10 @@
 
 mod ui;
 
+use crate::ui::{header, input_field, Msg};
 use rust_decimal::prelude::*;
 use rusty_money::{Currency, Iso, Money};
 use seed::{prelude::*, *};
-use crate::ui::{header, input_field, Msg};
 
 struct Model {
     hourly_wage: Money,
@@ -78,11 +78,7 @@ fn view(model: &Model) -> Node<Msg> {
     main![div![
         C!["container"],
         header(),
-        div![
-            C!["row"],
-            left_column(model),
-            right_column(model)
-        ]
+        div![C!["row"], left_column(model), right_column(model)]
     ]]
 }
 
@@ -90,14 +86,7 @@ fn right_column(model: &Model) -> Node<Msg> {
     div![
         C!["column"],
         table![
-            thead![
-                tr![
-                    th![
-                        attrs! {At::from("colspan") => 2},
-                        "Results"
-                    ]
-                ],
-            ],
+            thead![tr![th![attrs! {At::from("colspan") => 2}, "Results"]],],
             tbody![
                 tr![
                     td!["Manufacture cost per unit"],
@@ -123,45 +112,46 @@ fn right_column(model: &Model) -> Node<Msg> {
 fn left_column(model: &Model) -> Node<Msg> {
     div![
         C!["column"],
-        form![fieldset![
-            input_field(
-                "pin_quantity".to_string(),
-                "Quantity",
-                "Number of items ordered",
-                attrs! {At::Name => "pin-quantity", At::Placeholder => "Pin quantity", At::Value => model.pin_quantity}
-            ),
-            input_field(
-                "pin_cost".to_string(),
-                "Total cost",
-                "Total cost of order",
-                attrs! {At::Name => "pin-total-cost", At::Placeholder => "Pin total cost", At::Value => model.pin_cost}
-            ),
-            input_field(
-                "hours_worked".to_string(),
-                "Hours worked",
-                "Hours worked on item",
-                attrs! {At::Name => "hours-worked", At::Placeholder => "Hours worked", At::Value => model.hours_worked}
-            ),
-            input_field(
-                "hourly_wage".to_string(),
-                "Hourly wage",
-                "Cost of one hours work",
-                attrs! {At::Name => "hourly-wage", At::Placeholder => "Hourly wage", At::Value => model.hourly_wage}
-            ),
-            input_field(
-                "overhead_percentage".to_string(),
-                "Overhead percentage",
-                "Overhead as percentage of cost",
-                attrs! {At::Name => "overhead-percentage", At::Placeholder => "Overhead percentage", At::Value => model.overhead_percentage},
-            ),
-            button![
-                C!["button"],
-                "Calculate",
-                ev(Ev::Click, move |_| Msg::Calculate)
-            ]
+        form![
+            fieldset![
+                input_field(
+                    "pin_quantity".to_string(),
+                    "Quantity",
+                    "Number of items ordered",
+                    attrs! {At::Name => "pin_quantity", At::Placeholder => "Pin quantity", At::Value => model.pin_quantity}
+                ),
+                input_field(
+                    "pin_cost".to_string(),
+                    "Total cost",
+                    "Total cost of order",
+                    attrs! {At::Name => "pin_cost", At::Placeholder => "Pin total cost", At::Value => model.pin_cost}
+                ),
+                input_field(
+                    "hours_worked".to_string(),
+                    "Hours worked",
+                    "Hours worked on item",
+                    attrs! {At::Name => "hours_worked", At::Placeholder => "Hours worked", At::Value => model.hours_worked}
+                ),
+                input_field(
+                    "hourly_wage".to_string(),
+                    "Hourly wage",
+                    "Cost of one hours work",
+                    attrs! {At::Name => "hourly_wage", At::Placeholder => "Hourly wage", At::Value => model.hourly_wage}
+                ),
+                input_field(
+                    "overhead_percentage".to_string(),
+                    "Overhead percentage",
+                    "Overhead as percentage of cost",
+                    attrs! {At::Name => "overhead_percentage", At::Placeholder => "Overhead percentage", At::Value => model.overhead_percentage},
+                ),
+                button![
+                    C!["button"],
+                    "Calculate",
+                    ev(Ev::Click, move |_| Msg::Calculate)
+                ]
+            ],
+            ev(Ev::Submit, |event| event.prevent_default())
         ],
-        ev(Ev::Submit, |event| event.prevent_default())
-    ],
     ]
 }
 

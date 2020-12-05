@@ -43,7 +43,6 @@ dependencies = ["build_release"]
 script = [
     "mkdir dist || true",
     "cp index.html dist/index.html",
-    "cp tailwind.css dist/tailwind.css",
     "cp -r pkg dist/pkg"
 ]
 
